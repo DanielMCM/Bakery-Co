@@ -1,0 +1,207 @@
+###################################################
+##########          Results Module         ########
+###################################################
+
+results_path <- "Results/"
+
+# UI
+
+results_ui <- function(id) {
+    ns <- NS(id)
+    tabPanel(
+        title = "Results",
+        div(id = ns("div_processing"),
+            div(class = "sk-cube-grid", div(class = "sk-cube sk-cube1"), div(class = "sk-cube sk-cube2"), div(class = "sk-cube sk-cube3"), div(class = "sk-cube sk-cube4"),
+            div(class = "sk-cube sk-cube5"), div(class = "sk-cube sk-cube6"), div(class = "sk-cube sk-cube7"), div(class = "sk-cube sk-cube8"), div(class = "sk-cube sk-cube9"),
+            p(class = "results-label-processing", "Processing..."))),
+        div(id = ns("div_waiting"), h5("Choose a dataset and run the model")),
+        div(id = ns("div_finished"),
+            fluidRow(
+                box(title = h5("Support level"), class = "full-width-container", sliderInput(ns("level.support"), NULL, min = 0.005, max = 0.1, value = 0.05)),
+                box(title = h5("Confidence level"), class = "full-width-container", sliderInput(ns("level.confidence"), NULL, min = 0.1, max = 0.9, value = 0.8, step = 0.1))),
+            tabsetPanel(type = "pills",
+                tabPanel(title = "Every day",
+                    fluidRow(
+                        box(width = 12, h5("Rules")),
+                        box(plotOutput(ns("trans.plot.rules_graph"))),
+                        box(plotOutput(ns("trans.plot.rules_circle"))),
+                        box(width = 12, br()),
+                        box(width = 12, plotOutput(ns("trans.plot.rules_scatter"))),
+                        box(width = 12, br())),
+                    fluidRow(
+                        box(width = 12, h5("Summary")),
+                        box(verbatimTextOutput(ns("trans.summary"))),
+                        box(verbatimTextOutput(ns("trans.glimpse"))),
+                        box(width = 12, plotOutput(ns("trans.frequency.plot")))),
+                    fluidRow(
+                        box(width = 12, h5("Original data")),
+                        box(plotOutput(ns("data.plot.line"))),
+                        box(plotOutput(ns("data.plot.bars")))
+                    )),
+                tabPanel(title = "Weekdays (lunch time)",
+                    fluidRow(
+                        box(width = 12, h5("Rules")),
+                        box(plotOutput(ns("trans1.plot.rules_graph"))),
+                        box(plotOutput(ns("trans1.plot.rules_circle"))),
+                        box(width = 12, br()),
+                        box(width = 12, plotOutput(ns("trans1.plot.rules_scatter"))),
+                        box(width = 12, br())),
+                    fluidRow(
+                        box(width = 12, h5("Summary")),
+                        box(verbatimTextOutput(ns("trans1.summary"))),
+                        box(verbatimTextOutput(ns("trans1.glimpse"))),
+                        box(width = 12, plotOutput(ns("trans1.frequency.plot"))))),
+                tabPanel(title = "Weekends",
+                    fluidRow(
+                        box(width = 12, h5("Rules")),
+                        box(plotOutput(ns("trans2.plot.rules_graph"))),
+                        box(plotOutput(ns("trans2.plot.rules_circle"))),
+                        box(width = 12, br()),
+                        box(width = 12, plotOutput(ns("trans2.plot.rules_scatter"))),
+                        box(width = 12, br())),
+                    fluidRow(
+                        box(width = 12, h5("Summary")),
+                        box(verbatimTextOutput(ns("trans2.summary"))),
+                        box(verbatimTextOutput(ns("trans2.glimpse"))),
+                        box(width = 12, plotOutput(ns("trans2.frequency.plot"))))))))
+}
+
+# Server
+
+results_server <- function(input, output, session) {
+
+    # Load model
+
+    source(str_c(results_path, "model.R"), local = TRUE)
+
+    # Observers
+
+    observe({
+        req(values$state)
+        shinyjs::toggle(id = "div_processing", condition = values$state == "processing")
+        shinyjs::toggle(id = "div_waiting", condition = values$state == "waiting")
+        shinyjs::toggle(id = "div_finished", condition = values$state == "finished")
+    })
+
+    observe({
+        req(values$state)
+
+        # Check processing state
+
+        if (values$state != "processing") {
+            return()
+        }
+
+        # Build model
+
+        model.build(function() {
+            values$state <- "finished" # Change state to finished
+        });
+    })
+
+    # Trans
+
+    trans.rules <- reactive({
+        rules <- apriori(data.trans(), parameter = list(sup = input$level.support, conf = input$level.confidence, target = "rules"))
+    })
+
+    output$trans.summary <- renderPrint({
+        summary(data.trans())
+    })
+
+    output$trans.glimpse <- renderPrint({
+        glimpse(data.trans())
+    })
+
+    output$trans.frequency.plot <- renderPlot({
+        itemFrequencyPlot(data.trans(), topN = 15, type = "relative", col = "lightcyan2", xlab = "Item name",
+                  ylab = "Frequency (relative)", main = "Relative Item Frequency Plot")
+    })
+
+    output$trans.plot.rules_graph <- renderPlot({
+        plot(trans.rules(), method = "graph")
+    })
+
+    output$trans.plot.rules_circle <- renderPlot({
+        plot(trans.rules(), method = "graph", control = list(layout = igraph::in_circle()))
+    })
+
+    output$trans.plot.rules_scatter <- renderPlot({
+        plot(trans.rules(), measure = c("support", "lift"), shading = "confidence", jitter = 0)
+    })
+
+    # Trans 1
+
+    trans1.rules <- reactive({
+        rules <- apriori(data.trans1(), parameter = list(sup = input$level.support, conf = input$level.confidence, target = "rules"))
+    })
+
+    output$trans1.summary <- renderPrint({
+        summary(data.trans1())
+    })
+
+    output$trans1.glimpse <- renderPrint({
+        glimpse(data.trans1())
+    })
+
+    output$trans1.frequency.plot <- renderPlot({
+        itemFrequencyPlot(data.trans1(), topN = 15, type = "relative", col = "lightcyan2", xlab = "Item name",
+                  ylab = "Frequency (relative)", main = "Relative Item Frequency Plot")
+    })
+
+    output$trans1.plot.rules_graph <- renderPlot({
+        plot(trans1.rules(), method = "graph")
+    })
+
+    output$trans1.plot.rules_circle <- renderPlot({
+        plot(trans1.rules(), method = "graph", control = list(layout = igraph::in_circle()))
+    })
+
+    output$trans1.plot.rules_scatter <- renderPlot({
+        plot(trans1.rules(), measure = c("support", "lift"), shading = "confidence", jitter = 0)
+    })
+
+    # Trans 2
+
+    trans2.rules <- reactive({
+        rules <- apriori(data.trans2(), parameter = list(sup = input$level.support, conf = input$level.confidence, target = "rules"))
+    })
+
+    output$trans2.summary <- renderPrint({
+        summary(data.trans2())
+    })
+
+    output$trans2.glimpse <- renderPrint({
+        glimpse(data.trans2())
+    })
+
+    output$trans2.frequency.plot <- renderPlot({
+        itemFrequencyPlot(data.trans2(), topN = 15, type = "relative", col = "lightcyan2", xlab = "Item name",
+                      ylab = "Frequency (relative)", main = "Relative Item Frequency Plot")
+    })
+
+    output$trans2.plot.rules_graph <- renderPlot({
+        plot(trans2.rules(), method = "graph")
+    })
+
+    output$trans2.plot.rules_circle <- renderPlot({
+        plot(trans2.rules(), method = "graph", control = list(layout = igraph::in_circle()))
+    })
+
+    output$trans2.plot.rules_scatter <- renderPlot({
+        plot(trans2.rules(), measure = c("support", "lift"), shading = "confidence", jitter = 0)
+    })
+
+    # General data
+
+    output$data.plot.line <- renderPlot({
+        ggplot(data = data() %>%
+            group_by(Date) %>%
+            summarise(Transaction = n_distinct(Transaction)), aes(x = Date, y = Transaction)) + geom_line()
+    })
+    output$data.plot.bars <- renderPlot({
+        ggplot(data = data() %>%
+            group_by(Date = weekdays(Date)) %>%
+            summarise(Transaction = n_distinct(Transaction)), aes(x = Date, y = Transaction)) + geom_bar(stat = "identity")
+    })
+}
