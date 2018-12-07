@@ -16,11 +16,13 @@ results_ui <- function(id) {
             p(class = "results-label-processing", "Processing..."))),
         div(id = ns("div_waiting"), h5("Choose a dataset and run the model")),
         div(id = ns("div_finished"),
-            fluidRow(
-                box(title = h5("Support level"), class = "full-width-container", sliderInput(ns("level.support"), NULL, min = 0.005, max = 0.1, value = 0.05)),
-                box(title = h5("Confidence level"), class = "full-width-container", sliderInput(ns("level.confidence"), NULL, min = 0.1, max = 0.9, value = 0.8, step = 0.1))),
             tabsetPanel(type = "pills",
                 tabPanel(title = "Every day",
+                    fluidRow(
+                        box(width = 12, title = h5("Apriori algorithm with different support levels"), plotOutput(ns("trans.plot.linear")))),
+                    fluidRow(
+                        box(title = h5("Support level"), class = "full-width-container", sliderInput(ns("trans.level.support"), NULL, min = 0.005, max = 0.1, value = 0.05)),
+                        box(title = h5("Confidence level"), class = "full-width-container", sliderInput(ns("trans.level.confidence"), NULL, min = 0.1, max = 0.9, value = 0.8, step = 0.1))),
                     fluidRow(
                         box(width = 12, h5("Rules")),
                         box(plotOutput(ns("trans.plot.rules_graph"))),
@@ -40,6 +42,11 @@ results_ui <- function(id) {
                     )),
                 tabPanel(title = "Weekdays (lunch time)",
                     fluidRow(
+                        box(width = 12, title = h5("Apriori algorithm with different support levels"), plotOutput(ns("trans1.plot.linear")))),
+                    fluidRow(
+                        box(title = h5("Support level"), class = "full-width-container", sliderInput(ns("trans1.level.support"), NULL, min = 0.005, max = 0.1, value = 0.05)),
+                        box(title = h5("Confidence level"), class = "full-width-container", sliderInput(ns("trans1.level.confidence"), NULL, min = 0.1, max = 0.9, value = 0.8, step = 0.1))),
+                    fluidRow(
                         box(width = 12, h5("Rules")),
                         box(plotOutput(ns("trans1.plot.rules_graph"))),
                         box(plotOutput(ns("trans1.plot.rules_circle"))),
@@ -52,6 +59,11 @@ results_ui <- function(id) {
                         box(verbatimTextOutput(ns("trans1.glimpse"))),
                         box(width = 12, plotOutput(ns("trans1.frequency.plot"))))),
                 tabPanel(title = "Weekends",
+                    fluidRow(
+                        box(width = 12, title = h5("Apriori algorithm with different support levels"), plotOutput(ns("trans2.plot.linear")))),
+                    fluidRow(
+                        box(title = h5("Support level"), class = "full-width-container", sliderInput(ns("trans2.level.support"), NULL, min = 0.005, max = 0.1, value = 0.05)),
+                        box(title = h5("Confidence level"), class = "full-width-container", sliderInput(ns("trans2.level.confidence"), NULL, min = 0.1, max = 0.9, value = 0.8, step = 0.1))),
                     fluidRow(
                         box(width = 12, h5("Rules")),
                         box(plotOutput(ns("trans2.plot.rules_graph"))),
@@ -102,7 +114,34 @@ results_server <- function(input, output, session) {
     # Trans
 
     trans.rules <- reactive({
-        rules <- apriori(data.trans(), parameter = list(sup = input$level.support, conf = input$level.confidence, target = "rules"))
+        rules <- apriori(data.trans(), parameter = list(sup = input$trans.level.support, conf = input$trans.level.confidence, target = "rules"))
+    })
+
+    output$trans.plot.linear <- renderPlot({
+        result <- model.calculate_num_rules(data.trans())
+
+        # Number of rules found with a support level of 10%, 5%, 1% and 0.5%
+        ggplot(data = result$num_rules, aes(x = result$levels.confidence)) +
+
+        # Plot line and points (support level of 10%)
+        geom_line(aes(y = result$num_rules$rules_sup10, colour = "Support level of 10%")) +
+        geom_point(aes(y = result$num_rules$rules_sup10, colour = "Support level of 10%")) +
+
+        # Plot line and points (support level of 5%)
+        geom_line(aes(y = result$num_rules$rules_sup5, colour = "Support level of 5%")) +
+        geom_point(aes(y = result$num_rules$rules_sup5, colour = "Support level of 5%")) +
+
+        # Plot line and points (support level of 1%)
+        geom_line(aes(y = result$num_rules$rules_sup1, colour = "Support level of 1%")) +
+        geom_point(aes(y = result$num_rules$rules_sup1, colour = "Support level of 1%")) +
+
+        # Plot line and points (support level of 0.5%)
+        geom_line(aes(y = result$num_rules$rules_sup0.5, colour = "Support level of 0.5%")) +
+        geom_point(aes(y = result$num_rules$rules_sup0.5, colour = "Support level of 0.5%")) +
+
+        # Labs and theme
+        labs(x = "Confidence levels", y = "Number of rules found") +
+        theme_bw() + theme(legend.title = element_blank())
     })
 
     output$trans.summary <- renderPrint({
@@ -133,7 +172,34 @@ results_server <- function(input, output, session) {
     # Trans 1
 
     trans1.rules <- reactive({
-        rules <- apriori(data.trans1(), parameter = list(sup = input$level.support, conf = input$level.confidence, target = "rules"))
+        rules <- apriori(data.trans1(), parameter = list(sup = input$trans1.level.support, conf = input$trans1.level.confidence, target = "rules"))
+    })
+
+    output$trans1.plot.linear <- renderPlot({
+        result <- model.calculate_num_rules(data.trans1())
+
+        # Number of rules found with a support level of 10%, 5%, 1% and 0.5%
+        ggplot(data = result$num_rules, aes(x = result$levels.confidence)) +
+
+        # Plot line and points (support level of 10%)
+        geom_line(aes(y = result$num_rules$rules_sup10, colour = "Support level of 10%")) +
+        geom_point(aes(y = result$num_rules$rules_sup10, colour = "Support level of 10%")) +
+
+        # Plot line and points (support level of 5%)
+        geom_line(aes(y = result$num_rules$rules_sup5, colour = "Support level of 5%")) +
+        geom_point(aes(y = result$num_rules$rules_sup5, colour = "Support level of 5%")) +
+
+        # Plot line and points (support level of 1%)
+        geom_line(aes(y = result$num_rules$rules_sup1, colour = "Support level of 1%")) +
+        geom_point(aes(y = result$num_rules$rules_sup1, colour = "Support level of 1%")) +
+
+        # Plot line and points (support level of 0.5%)
+        geom_line(aes(y = result$num_rules$rules_sup0.5, colour = "Support level of 0.5%")) +
+        geom_point(aes(y = result$num_rules$rules_sup0.5, colour = "Support level of 0.5%")) +
+
+        # Labs and theme
+        labs(x = "Confidence levels", y = "Number of rules found") +
+        theme_bw() + theme(legend.title = element_blank())
     })
 
     output$trans1.summary <- renderPrint({
@@ -164,7 +230,34 @@ results_server <- function(input, output, session) {
     # Trans 2
 
     trans2.rules <- reactive({
-        rules <- apriori(data.trans2(), parameter = list(sup = input$level.support, conf = input$level.confidence, target = "rules"))
+        rules <- apriori(data.trans2(), parameter = list(sup = input$trans2.level.support, conf = input$trans2.level.confidence, target = "rules"))
+    })
+
+    output$trans2.plot.linear <- renderPlot({
+        results <- model.calculate_num_rules(data.trans2())
+
+        # Number of rules found with a support level of 10%, 5%, 1% and 0.5%
+        ggplot(data = results$num_rules, aes(x = results$levels.confidence)) +
+
+        # Plot line and points (support level of 10%)
+        geom_line(aes(y = result$num_rules$rules_sup10, colour = "Support level of 10%")) +
+        geom_point(aes(y = result$num_rules$rules_sup10, colour = "Support level of 10%")) +
+
+        # Plot line and points (support level of 5%)
+        geom_line(aes(y = result$num_rules$rules_sup5, colour = "Support level of 5%")) +
+        geom_point(aes(y = result$num_rules$rules_sup5, colour = "Support level of 5%")) +
+
+        # Plot line and points (support level of 1%)
+        geom_line(aes(y = result$num_rules$rules_sup1, colour = "Support level of 1%")) +
+        geom_point(aes(y = result$num_rules$rules_sup1, colour = "Support level of 1%")) +
+
+        # Plot line and points (support level of 0.5%)
+        geom_line(aes(y = result$num_rules$rules_sup0.5, colour = "Support level of 0.5%")) +
+        geom_point(aes(y = result$num_rules$rules_sup0.5, colour = "Support level of 0.5%")) +
+
+        # Labs and theme
+        labs(x = "Confidence levels", y = "Number of rules found") +
+        theme_bw() + theme(legend.title = element_blank())
     })
 
     output$trans2.summary <- renderPrint({
