@@ -11,16 +11,16 @@ data <- reactive({
 
 data.test1 <- reactive({
     req(data)
-    return(data()[which((weekdays(data()$Date) != "sábado")
-                & (weekdays(data()$Date) != "domingo")
+    return(data()[which((wday(data()$Date) != 7)
+                & (wday(data()$Date) != 1)
                 & (hour(hms(data()$Time)) < 16)
                 & (hour(hms(data()$Time)) > 12))
                 ,])
 })
 
 data.test2 <- reactive({
-    return(data()[which((weekdays(data()$Date) == "sábado")
-                | (weekdays(data()$Date) == "domingo"))
+    return(data()[which((wday(data()$Date) == 7)
+                | (wday(data()$Date) == 1))
                 ,])
 })
 

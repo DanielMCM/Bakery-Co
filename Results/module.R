@@ -234,10 +234,10 @@ results_server <- function(input, output, session) {
     })
 
     output$trans2.plot.linear <- renderPlot({
-        results <- model.calculate_num_rules(data.trans2())
+        result <- model.calculate_num_rules(data.trans2())
 
         # Number of rules found with a support level of 10%, 5%, 1% and 0.5%
-        ggplot(data = results$num_rules, aes(x = results$levels.confidence)) +
+        ggplot(data = result$num_rules, aes(x = result$levels.confidence)) +
 
         # Plot line and points (support level of 10%)
         geom_line(aes(y = result$num_rules$rules_sup10, colour = "Support level of 10%")) +

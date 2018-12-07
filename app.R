@@ -18,6 +18,7 @@ library(arulesViz)
 library(utils)
 library(lubridate)
 library(rlist)
+library(lubridate)
 
 ###################################################
 ##########           Sources       ################
