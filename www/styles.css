@@ -107,6 +107,10 @@ body > .container-fluid {
     width: 100%;
 }
 
+.box-rules {
+    margin-top: 20px;
+}
+
 /* Loading */
 
 .sk-cube-grid {
