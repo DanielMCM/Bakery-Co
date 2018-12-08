@@ -24,9 +24,10 @@ results_ui <- function(id) {
                         box(title = h5("Support level"), class = "full-width-container", sliderInput(ns("trans.level.support"), NULL, min = 0.005, max = 0.1, value = 0.05)),
                         box(title = h5("Confidence level"), class = "full-width-container", sliderInput(ns("trans.level.confidence"), NULL, min = 0.1, max = 0.9, value = 0.8, step = 0.1))),
                     fluidRow(
-                        box(width = 12, h5("Rules"), verbatimTextOutput(ns("trans.rules"))),
+                        box(width = 12, h5("Rules")),
                         box(plotOutput(ns("trans.plot.rules_graph"))),
                         box(plotOutput(ns("trans.plot.rules_circle"))),
+                        box(width = 12, class = "box-rules", verbatimTextOutput(ns("trans.rules"))),
                         box(width = 12, br()),
                         box(width = 12, plotOutput(ns("trans.plot.rules_scatter"))),
                         box(width = 12, br())),
@@ -47,9 +48,10 @@ results_ui <- function(id) {
                         box(title = h5("Support level"), class = "full-width-container", sliderInput(ns("trans1.level.support"), NULL, min = 0.005, max = 0.1, value = 0.05)),
                         box(title = h5("Confidence level"), class = "full-width-container", sliderInput(ns("trans1.level.confidence"), NULL, min = 0.1, max = 0.9, value = 0.8, step = 0.1))),
                     fluidRow(
-                        box(width = 12, h5("Rules"), verbatimTextOutput(ns("trans1.rules"))),
+                        box(width = 12, h5("Rules")),
                         box(plotOutput(ns("trans1.plot.rules_graph"))),
                         box(plotOutput(ns("trans1.plot.rules_circle"))),
+                        box(width = 12, class = "box-rules", verbatimTextOutput(ns("trans1.rules"))),
                         box(width = 12, br()),
                         box(width = 12, plotOutput(ns("trans1.plot.rules_scatter"))),
                         box(width = 12, br())),
@@ -65,9 +67,10 @@ results_ui <- function(id) {
                         box(title = h5("Support level"), class = "full-width-container", sliderInput(ns("trans2.level.support"), NULL, min = 0.005, max = 0.1, value = 0.05)),
                         box(title = h5("Confidence level"), class = "full-width-container", sliderInput(ns("trans2.level.confidence"), NULL, min = 0.1, max = 0.9, value = 0.8, step = 0.1))),
                     fluidRow(
-                        box(width = 12, h5("Rules"), verbatimTextOutput(ns("trans2.rules"))),
+                        box(width = 12, h5("Rules")),
                         box(plotOutput(ns("trans2.plot.rules_graph"))),
                         box(plotOutput(ns("trans2.plot.rules_circle"))),
+                        box(width = 12, class = "box-rules", verbatimTextOutput(ns("trans2.rules"))),
                         box(width = 12, br()),
                         box(width = 12, plotOutput(ns("trans2.plot.rules_scatter"))),
                         box(width = 12, br())),
@@ -120,7 +123,7 @@ results_server <- function(input, output, session) {
 
     output$trans.rules <- renderPrint({
         req(trans.rules)
-        trans.rules.df <- data.frame(lhs = labels(trans.rules()@lhs), rhs = labels(trans.rules()@rhs), trans.rules()@quality)
+        trans.rules.df <- data.frame(antecedent = labels(trans.rules()@lhs), consequent = labels(trans.rules()@rhs), trans.rules()@quality)
         return(trans.rules.df[order(-trans.rules.df$lift),])
     })
 
@@ -193,7 +196,7 @@ results_server <- function(input, output, session) {
 
     output$trans1.rules <- renderPrint({
         req(trans1.rules)
-        trans1.rules.df <- data.frame(lhs = labels(trans1.rules()@lhs), rhs = labels(trans1.rules()@rhs), trans1.rules()@quality)
+        trans1.rules.df <- data.frame(antecedent = labels(trans1.rules()@lhs), consequent = labels(trans1.rules()@rhs), trans1.rules()@quality)
         return(trans1.rules.df[order(-trans1.rules.df$lift),])
     })
 
@@ -266,7 +269,7 @@ results_server <- function(input, output, session) {
 
     output$trans2.rules <- renderPrint({
         req(trans2.rules)
-        trans2.rules.df <- data.frame(lhs = labels(trans2.rules()@lhs), rhs = labels(trans2.rules()@rhs), trans2.rules()@quality)
+        trans2.rules.df <- data.frame(antecedent = labels(trans2.rules()@lhs), consequent = labels(trans2.rules()@rhs), trans2.rules()@quality)
         return(trans2.rules.df[order(-trans2.rules.df$lift),])
     })
 
