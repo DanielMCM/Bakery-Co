@@ -56,7 +56,6 @@ server <- function(input, output, session) {
     # Call modules
     callModule(selection_server, "Selection")
     callModule(results_server, "Results")
-    callModule(history_server, "History")
     callModule(team_server, "Team")
 }
 
